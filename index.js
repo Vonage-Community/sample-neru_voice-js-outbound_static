@@ -1,19 +1,22 @@
 import { Voice, neru } from 'neru-alpha';
-import { fileURLToPath } from 'url';
 import express from 'express';
-import path from 'path';
 
-const router = neru.Router();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const app = express();
+const port = process.env.NERU_APP_PORT;
 
-router.use(express.static(path.join(__dirname, 'public')))
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static('public'));
 
-router.get('/', async (req, res) => {
+app.get('/_/health', async (req, res) => {
+    res.sendStatus(200);
+});
+
+app.get('/', async (req, res) => {
     res.sendFile('views/index.html', { root: '.' });
 });
 
-router.post('/call', async (req, res, next) => {
+app.post('/call', async (req, res, next) => {
     try {  
         const session = neru.createSession();
         const voice = new Voice(session);
@@ -34,7 +37,7 @@ router.post('/call', async (req, res, next) => {
             )
             .execute();
         
-        await voice.onVapiEvent(response?.uuid, 'onEvent').execute();
+        await voice.onVapiEvent({ vapiUUID: response?.uuid, callback: 'onEvent' }).execute();
         
         res.redirect('/');
     } catch (error) {
@@ -42,10 +45,12 @@ router.post('/call', async (req, res, next) => {
     }
 });
 
-router.post('/onEvent', async (req, res) => {
+app.post('/onEvent', async (req, res) => {
     console.log('event status is: ', req.body.status);
     console.log('event direction is: ', req.body.direction);
     res.sendStatus(200);
 });
 
-export { router };
+app.listen(port, () => {
+    console.log(`Example app listening on port ${port}`)
+});
