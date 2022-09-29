@@ -24,7 +24,7 @@ Then initialize NeRu, choosing an application, `nodejs16` for runtime, and `skip
 neru init
 ```
 
-This will create a `neru.yml` file for you. In that file add the linked number under `configurations`, `entrypoint` and the `debug` object:
+This will create a `neru.yml` file for you. In that file add the linked number under `environment`, `entrypoint` and the `debug` object:
 
 ```yml
 project:
@@ -37,10 +37,9 @@ instance:
     entrypoint: [node, index.js]
     capabilities:
         - voice
-    configurations:
-        contact:
-            number: "$YOUR_VONAGE_NUMBER"
-            type: phone
+    environment:
+        - name: VONAGE_NUMBER
+          value: "$YOUR_VONAGE_NUMBER"
 debug:
     name: debug
     entrypoint: [nodemon, --inspect, index.js]
